@@ -410,8 +410,3 @@ class Graph:
                 if in_degrees[vertex] == queue.count(vertex) == 0:
                     queue.put(vertex)
         return order
-
-
-graph = Graph({i for i in range(1, 9)}, {
-    (1, 2), (2, 4), (4, 3), (3, 1), (5, 6), (6, 8), (8, 7), (7, 5), (1, 5), (2, 6), (4, 8), (3, 7)}, "D")
-print(graph.cycles())
