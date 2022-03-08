@@ -31,7 +31,6 @@ class Graph:
         """
         self.V = v
         self.E = e
-        self.i = 0  # ignore this
         self.type = graph_type
         self.p = len(v)
         self.q = len(e)
@@ -47,19 +46,21 @@ class Graph:
         else:
             self.empty = False
 
+    def is_DAG(self):
+        """check is graph directed acyclic graph or not
+
+        Returns:
+            boolean: if output is true means the graph is directed acyclic and if it is false the graph isn't directed acyclic
+        """
+
         # check graph has cycles or not
         scc = self.cycles()
-        array = [scc[key] for key in scc]
-        array.sort()
-        has_cycle = None
-        for index in range(1, len(array)):
-            value1 = array[index - 1]
-            value2 = array[index]
-            if value1 == value2:
+        has_cycle = False
+        for c in scc:
+            if len(c) != 1:
                 has_cycle = True
-
-        # self.DAG be True when the graph is Directed Acyclic Graph
-        self.DAG = (self.type == "d") and not has_cycle
+                break
+        return (self.type == "d") and not has_cycle
 
     def out_deg(self, vertex: int):
         """return the out-degree of a vertex
@@ -185,7 +186,7 @@ class Graph:
         Returns:
             boolean: a boolean value to show there is a path or not
         """
-        visited = []
+        looked = []
         stack = Stack()
         stack.put(start)
         target_found = False
@@ -193,11 +194,11 @@ class Graph:
             if stack.length == 0:
                 break
             vertex = stack.get()
-            if not(vertex in visited):
+            if not(vertex in looked):
                 if vertex == target:
                     target_found = True
                 else:
-                    visited.append(vertex)
+                    looked.append(vertex)
                     for v in self.neighboring_vertices(vertex):
                         stack.put(v)
         return target_found
@@ -260,7 +261,7 @@ class Graph:
         """find the vertex with the biggest in or out degree
 
         Args:
-            deg_type (str, optional): ID means you want biggest in degree. OD means you want biggest out degree. Defaults to "OD".
+            deg_type (str): ID means you want biggest in degree. OD means you want biggest out degree. Defaults to "OD".
 
         Returns:
             dict: this dict includes vertex number in V set and its degree
@@ -278,7 +279,7 @@ class Graph:
         """find the vertex with the smallest in or out degree
 
         Args:
-            deg_type (str, optional): ID means you want smallest in degree. OD means you want smallest out degree. Defaults to "OD".
+            deg_type (str): ID means you want smallest in degree. OD means you want smallest out degree. Defaults to "OD".
 
         Returns:
             dict: this dict includes vertex number in V set and its degree
@@ -346,38 +347,61 @@ class Graph:
             colors.add(colored_graph[key])
         return len(colors)
 
+    def reverse_edges(self):
+        """revese the direction of edges
+
+        Returns:
+            set: reversed edges set
+        """
+        reversed_edges = set()
+        for e in self.E:
+            reversed_edge = (e[1], e[0])
+            reversed_edges.add(reversed_edge)
+        return reversed_edges
+
     def cycles(self):
-        UNVISITED = -1
-        ids = dict.fromkeys(self.V, UNVISITED)
-        low_link = ids.copy()
-        stack = Stack()
-        for vertex in self.V:
-            if ids[vertex] == UNVISITED:
-                result = self.tarjan_dfs(vertex, stack, ids, low_link, self.i)
-                ids = result[0]
-                low_link = result[1]
-        low_link.pop(None)
-        return low_link
+        """find the SCC (Strongly Connected Components) of the graph
 
-    def tarjan_dfs(self, vertex, stack, ids, low_link, i):
-        stack.put(vertex)
-        ids[vertex] = self.i
-        low_link[vertex] = self.i
-        self.i += 1
+        Returns:
+            list: a 2D list of SCC
+        """
+        checked = []
+        start = self.maximum()["vertex"]
+        order_stack = self.dfs(start)
+        print("checked = ", checked)
+        self.E = self.reverse_edges()
+        sccs = []
+        for i in range(order_stack.length):
+            vetrex = order_stack.pop()
+            if not(vetrex in checked):
+                scc = self.dfs(vetrex, checked, Stack())
+                scc_list = []
+                order_stack.show()
+                for j in range(scc.length):
+                    scc_list.append(scc.pop())
+                sccs.append(scc_list)
+        self.E = self.reverse_edges()
+        return sccs
+
+    def dfs(self, vertex, explored=[], order=Stack()):
+        """explore the graph and return the order of visiting with DFS.
+
+
+        Args:
+            vertex (int): the start vertex of exploring
+            explored (list): a list for saving explored vertices. Defaults to [].
+            order (Stack): order of exploring vertices. Defaults to Stack().
+
+        Returns:
+            Stack: a stack of DFS traversal order
+        """
+        explored.append(vertex)
+        print(vertex, explored, sep="\n")
         for n in self.neighboring_vertices(vertex):
-            if ids[n] == -1:
-                self.tarjan_dfs(n, stack, ids, low_link, i)
-
-            if stack.count(n) != 0:
-                low_link[vertex] = min(low_link[n], low_link[vertex])
-
-        if low_link[vertex] == ids[vertex]:
-            for j in range(stack.length):
-                v = stack.pop()
-                low_link[v] = low_link[vertex]
-                if v == vertex:
-                    break
-            return ids, low_link
+            if not(n in explored):
+                self.dfs(n, explored, order)
+        order.push(vertex)
+        return order
 
     def topsort(self):
         """find the topological order of the graph with Kahn's algorithms
@@ -390,7 +414,7 @@ class Graph:
         Returns:
             list: a list of the graph's topological order
         """
-        if not self.DAG:
+        if not self.is_DAG():
             raise TypeError("your graph isn't directed acyclic graph")
         order = []
         queue = Queue()
