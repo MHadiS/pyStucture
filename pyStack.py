@@ -3,7 +3,7 @@ class Node:
     """
 
     def __init__(self, data):
-        self.data = data  # a to store in the node
+        self.data = data  # store a data in the node
         self.link = None  # the next node
 
 
