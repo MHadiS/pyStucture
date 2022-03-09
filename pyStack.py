@@ -51,7 +51,7 @@ class Stack:
         return value
 
     def pop(self):
-        self.get()
+        return self.get()
 
     def clear(self):
         """clear the stack
