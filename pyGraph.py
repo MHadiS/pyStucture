@@ -15,7 +15,7 @@ class Graph:
         Args:
             v (set): A set of graph vertices
             e (set): A set of graph edges
-            graph_type (str): A string for defining the graph types
+            graph_type (str): A string for defining the graphs type
 
         Raises:
             ValueError: If you give wrong type to the class this error raise with 'Unknown type of graph' message
@@ -51,6 +51,9 @@ class Graph:
 
         Returns:
             boolean: if output is true means the graph is directed acyclic and if it is false the graph isn't directed acyclic
+
+        Description:
+            when a graph is directed and doesn't have any cycles we call it a directed acyclic graph
         """
 
         # check graph has cycles or not
@@ -113,7 +116,7 @@ class Graph:
             vertex (int): vertex number in v set
 
         Returns:
-            list: a list of neighboring vertices of the vertex 
+            list: a list of neighboring vertices of the vertex
         """
         neighbors = []
 
@@ -258,10 +261,10 @@ class Graph:
         return path
 
     def maximum(self, deg_type: str = "OD"):
-        """find the vertex with the biggest in or out degree
+        """find the vertex with the biggest in-degree or out-degree
 
         Args:
-            deg_type (str): ID means you want biggest in degree. OD means you want biggest out degree. Defaults to "OD".
+            deg_type (str): ID means you want biggest in-degree. OD means you want biggest out-degree. Defaults to "OD".
 
         Returns:
             dict: this dict includes vertex number in V set and its degree
@@ -276,10 +279,10 @@ class Graph:
         return {"vertex": vertex, "degree": degree}
 
     def minimum(self, deg_type="OD"):
-        """find the vertex with the smallest in or out degree
+        """find the vertex with the smallest in-degree or out-degree
 
         Args:
-            deg_type (str): ID means you want smallest in degree. OD means you want smallest out degree. Defaults to "OD".
+            deg_type (str): ID means you want smallest in-degree. OD means you want smallest out-degree. Defaults to "OD".
 
         Returns:
             dict: this dict includes vertex number in V set and its degree
@@ -294,7 +297,7 @@ class Graph:
         return {"vertex": vertex, "degree": degree}
 
     def weight(self, edge: tuple):
-        """find the weight of an edge
+        """find the weight( or we can call it length) of an edge
 
         Args:
             edge (tuple): the edge tuple in e set.
@@ -304,7 +307,7 @@ class Graph:
         """
         for e in self.E:
             formatted_edge = (e[0], e[1])
-            if formatted_edge == edge:
+            if formatted_edge == edge or formatted_edge == (edge[1], edge[0]):
                 try:
                     return e[2]
                 except IndexError:
@@ -360,7 +363,9 @@ class Graph:
         return reversed_edges
 
     def cycles(self):
-        """find the SCC (Strongly Connected Components) of the graph
+        """find the SCC (Strongly Connected Components) of the graph with kosaraju's algorithm
+            algorithm time complexity = O(V + E)
+            algorithm space complexity = O(V)
 
         Returns:
             list: a 2D list of SCC
@@ -383,8 +388,10 @@ class Graph:
         self.E = self.reverse_edges()
         return sccs
 
-    def dfs(self, vertex, explored=[], order=Stack()):
+    def dfs(self, vertex: int, explored=[], order=Stack()):
         """explore the graph and return the order of visiting with DFS.
+            algorithm time complexity = O(V + E)
+            algorithm space complexity = O(V)
 
 
         Args:
@@ -393,7 +400,7 @@ class Graph:
             order (Stack): order of exploring vertices. Defaults to Stack().
 
         Returns:
-            Stack: a stack of DFS traversal order
+            Stack: a stack of DFS visiting order
         """
         explored.append(vertex)
         print(vertex, explored, sep="\n")
@@ -402,6 +409,30 @@ class Graph:
                 self.dfs(n, explored, order)
         order.push(vertex)
         return order
+
+    def bfs(self, vertex: int):
+        """explore the graph and return the order of visiting with BFS
+            algorithm time complexity = O(V + E)
+            algorithm space complexity = O(V)
+
+        Args:
+            vertex (int): start vertex
+
+        Returns:
+            list: a list of BFS visiting order
+        """
+        bfs_order = []
+        q = Queue()
+        q.put(vertex)
+
+        while not q.is_empty():
+            vertex = q.get()
+            # check is vertex visited or not for don't visit visited vertices
+            if not(vertex in bfs_order):
+                bfs_order.append(vertex)
+                for n in self.neighboring_vertices(vertex):
+                    q.put(n)
+        return bfs_order
 
     def topsort(self):
         """find the topological order of the graph with Kahn's algorithms
@@ -429,8 +460,3 @@ class Graph:
             for n in self.neighboring_vertices(element):
                 in_degrees[n] = in_degrees[n] - 1
             del in_degrees[element]
-
-            for vertex in in_degrees:
-                if in_degrees[vertex] == queue.count(vertex) == 0:
-                    queue.put(vertex)
-        return order
