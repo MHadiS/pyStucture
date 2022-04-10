@@ -3,6 +3,7 @@ from pyStack import Node
 
 class LinkedList:
     """a class for saving linked list and give you linked list data structure
+        you can define a linked list like this: NAME = LinkedList()
     """
 
     def __init__(self):
@@ -43,9 +44,9 @@ class LinkedList:
             index (int): index of node object
 
         Returns:
-            any: the id of the node object
+            any: the data of the node object
         """
-        return self.get_obj(index).id
+        return self.get_obj(index).data
 
     def put(self, new_element):
         """put a new element in list
@@ -53,8 +54,8 @@ class LinkedList:
         Args:
             new_element (any): the new element
         """
-        if self.root.id is None:
-            self.root.id = new_element
+        if self.root.data is None:
+            self.root.data = new_element
         else:
             last_element = self.get_obj(self.length - 1)
             last_element.link = Node(new_element)
@@ -109,7 +110,7 @@ class LinkedList:
         """remove and return the index
 
         Args:
-            index (int, optional): index of element you want to remove. Defaults to -1.
+            index (int): index of element you want to remove. Defaults to -1.
 
         Raises:
             IndexError: if the index was out of range
